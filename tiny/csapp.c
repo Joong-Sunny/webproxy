@@ -717,7 +717,7 @@ void Pthread_once(pthread_once_t *once_control, void (*init_function)()) {
 }
 
 /*******************************
- * Wrappers for Posix semaphores
+ * Wrappers for Posixa semaphores
  *******************************/
 
 void Sem_init(sem_t *sem, int pshared, unsigned int value) 
