@@ -60,8 +60,12 @@ void doit(int fd)
   Rio_readinitb(&rio, fd);
   Rio_readlineb(&rio, buf, MAXLINE);
   printf("Request headers:\n");
-  printf("%s", buf);
+  printf("%s", buf); //get HTTP/ 1.1/나옴
   sscanf(buf, "%s %s %s", method, uri, version);
+  printf("version is..\n");
+  printf("%s", version);
+  printf("version is..\n");
+
   /* GET 메소드 외에는 지원하지 않음 - 다른 요청이 오면 에러 띄우고 종료 */
 
   if (!strcasecmp(method, "HEAD"))
@@ -70,7 +74,9 @@ void doit(int fd)
   }
   else if (!strcasecmp(method, "GET"))
   {
+    printf("request header start\n");
     read_requesthdrs(&rio);
+    printf("request header end\n");
   }
   else
   {
@@ -89,7 +95,13 @@ void doit(int fd)
 
 
   /* URI를 parsing 하고, 요청받은 것이 static contents인지 판단하는 플래그 설정 */
+  printf("dddddddd\n");
+
+  printf("uri is.... %s", uri);
+
+  printf("fffffffs\n");
   is_static = parse_uri(uri, filename, cgiargs);
+  
 
   /* 파일이 디스크 상에 있지 않다면 - 에러 띄우고 종료 */
   if (stat(filename, &sbuf) < 0)

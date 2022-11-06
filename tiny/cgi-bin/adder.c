@@ -7,35 +7,32 @@ int main(void)
   int n1 = 0, n2 = 0;
 
   /* Extract the two arguments */
-  // if ((buf = getenv("QUERY_STRING")) != NULL)
-  // {
-  //   p = strchr(buf, '&');
-  //   *p = '\0';
-  //   strcpy(arg1, buf);
-  //   strcpy(arg2, p + 1);
-  //   strcpy(arg1, buf+3);
-  //   strcpy(arg2, p + 3);
-  //   n1 = atoi(arg1);
-  //   n2 = atoi(arg2);
-  // }
-
-char *temp;
-char *temp2;
-if ((buf = getenv("QUERY_STRING")) != NULL) {
+  if ((buf = getenv("QUERY_STRING")) != NULL) {
     p = strchr(buf, '&');
     *p = '\0';
-
-    temp = strchr(buf, '=');
-    *temp = '\0';
-    strcpy(arg1, temp+1);
-   
-
-    temp2 = strchr(p+1, '=');
-    *temp2 = '\0';
-    strcpy(arg2, temp2+1);
-     n1 = atoi(arg1);
+    strcpy(arg1, buf);
+    strcpy(arg2, p+1);
+    n1 = atoi(arg1);
     n2 = atoi(arg2);
   }
+
+// char *temp;
+// char *temp2;
+// if ((buf = getenv("QUERY_STRING")) != NULL) {
+//     p = strchr(buf, '&');
+//     *p = '\0';
+
+//     temp = strchr(buf, '=');
+//     *temp = '\0';
+//     strcpy(arg1, temp+1);
+   
+
+//     temp2 = strchr(p+1, '=');
+//     *temp2 = '\0';
+//     strcpy(arg2, temp2+1);
+//      n1 = atoi(arg1);
+//     n2 = atoi(arg2);
+  // }
 
 
 
