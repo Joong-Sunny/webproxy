@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     Getnameinfo((SA *)&clientaddr, clientlen, hostname, MAXLINE, port, MAXLINE, 0);
     printf("Accepted connection from (%s, %s)\n", hostname, port);
     /* Transaction 수행 */
-    printf("나 이제 doit 실행한다...????");
+    printf("나 이제 connfd %d로 doit 실행한다...???? \n", connfd);
     doit(connfd); // line:netp:tiny:doit
     /* 서버쪽 연결 종료 */
     Close(connfd); // line:netp:tiny:close
@@ -56,9 +56,13 @@ void doit(int fd)
   char filename[MAXLINE], cgiargs[MAXLINE];
   rio_t rio;
 
+  printf("Debug: 나예린, doit에 들어와버렸다 \n");
+
   /* Request Line과 헤더를 읽기 */
   Rio_readinitb(&rio, fd);
+  printf("Debug: rio_readinitb 는 성공!!\n");
   Rio_readlineb(&rio, buf, MAXLINE);
+  printf("Debug: rio_readlinb도 성공!!\n");
   printf("Request headers:\n");
   printf("%s", buf); //get HTTP/ 1.1/나옴
   sscanf(buf, "%s %s %s", method, uri, version);
@@ -95,11 +99,9 @@ void doit(int fd)
 
 
   /* URI를 parsing 하고, 요청받은 것이 static contents인지 판단하는 플래그 설정 */
-  printf("dddddddd\n");
 
-  printf("uri is.... %s", uri);
+  printf("(Debuging) uri is.... %s", uri);
 
-  printf("fffffffs\n");
   is_static = parse_uri(uri, filename, cgiargs);
   
 
@@ -183,6 +185,7 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
 /* Tiny는 5개의 정적 컨텐츠 파일을 지원함 : HTML, unformatted text file, GIF, PNG, JPEG */
 void serve_static(int fd, char *filename, int filesize)
 {
+  printf("Debug: 나 예린, Serve static 들어옴");
   int srcfd;
   // char *srcp, filetype[MAXLINE], buf[MAXBUF];
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
