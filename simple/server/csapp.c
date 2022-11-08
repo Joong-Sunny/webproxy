@@ -779,6 +779,7 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
 
     while (nleft > 0) {
 	if ((nwritten = write(fd, bufp, nleft)) <= 0) {
+        printf("Debug: 쓰는중 쓰는중 쓰는중");
 	    if (errno == EINTR)  /* Interrupted by sig handler return */
 		nwritten = 0;    /* and call write() again */
 	    else
