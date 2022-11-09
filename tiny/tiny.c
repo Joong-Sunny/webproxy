@@ -1,11 +1,3 @@
-/* $begin tinymain */
-/*
- * tiny.c - A simple, iterative HTTP/1.0 Web server that uses the
- *     GET method to serve static and dynamic content.
- *
- * Updated 11/2019 droh
- *   - Fixed sprintf() aliasing issue in serve_static(), and clienterror().
- */
 #include "csapp.h"
 
 void doit(int fd);
@@ -29,21 +21,17 @@ int main(int argc, char **argv)
     fprintf(stderr, "usage: %s <port>\n", argv[0]);
     exit(1);
   }
-  listenfd = Open_listenfd(argv[1]); // 듣기 소켓 오픈
-  /* 무한 서버 루프 */
+  listenfd = Open_listenfd(argv[1]);
+
+  /* run */
   while (1)
   {
     clientlen = sizeof(clientaddr);
-    /* 연결 요청 접수 */
-    connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen); // line:netp:tiny:accept
+    connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
     Getnameinfo((SA *)&clientaddr, clientlen, hostname, MAXLINE, port, MAXLINE, 0);
     printf("Accepted connection from (%s, %s)\n", hostname, port);
-    /* Transaction 수행 */
-    printf("나 이제 connfd %d로 doit 실행한다...???? \n", connfd);
-    doit(connfd); // line:netp:tiny:doit
-    /* 서버쪽 연결 종료 */
-    Close(connfd); // line:netp:tiny:close
-    printf("힝... 서버 닫힘 ㅠㅠ");
+    doit(connfd);
+    Close(connfd);
   }
 }
 
@@ -56,22 +44,14 @@ void doit(int fd)
   char filename[MAXLINE], cgiargs[MAXLINE];
   rio_t rio;
 
-  printf("Debug: 나예린, doit에 들어와버렸다 \n");
-
   /* Request Line과 헤더를 읽기 */
   Rio_readinitb(&rio, fd);
-  printf("Debug: rio_readinitb 는 성공!!\n");
   Rio_readlineb(&rio, buf, MAXLINE);
-  printf("Debug: rio_readlinb도 성공!!\n");
   printf("Request headers:\n");
-  printf("%s", buf); //get HTTP/ 1.1/나옴
+  printf("%s", buf); // get HTTP/ 1.1/나옴
   sscanf(buf, "%s %s %s", method, uri, version);
-  printf("version is..\n");
-  printf("%s", version);
-  printf("version is..\n");
 
   /* GET 메소드 외에는 지원하지 않음 - 다른 요청이 오면 에러 띄우고 종료 */
-
   if (!strcasecmp(method, "HEAD"))
   {
     read_requesthdrs(&rio);
@@ -88,22 +68,11 @@ void doit(int fd)
     return;
   }
 
-
-//   if (strcasecmp(method, "GET"))
-//   {
-//     clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method");
-//     return;
-//   }
-//  read_requesthdrs(&rio);
-
-
-
   /* URI를 parsing 하고, 요청받은 것이 static contents인지 판단하는 플래그 설정 */
 
   printf("(Debuging) uri is.... %s", uri);
 
   is_static = parse_uri(uri, filename, cgiargs);
-  
 
   /* 파일이 디스크 상에 있지 않다면 - 에러 띄우고 종료 */
   if (stat(filename, &sbuf) < 0)
@@ -153,10 +122,10 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
   char *ptr;
   if (!strstr(uri, "cgi-bin"))
   {/* Static content */
-    strcpy(cgiargs, ""); /* cgi argument를 지우고 */
+    strcpy(cgiargs, "");
     strcpy(filename, ".");
-    strcat(filename, uri); 
-    if (uri[strlen(uri) - 1] == '/') 
+    strcat(filename, uri);
+    if (uri[strlen(uri) - 1] == '/')
       strcat(filename, "home.html");
     return 1;
   }
@@ -201,7 +170,7 @@ void serve_static(int fd, char *filename, int filesize)
   printf("%s", buf);
 
   /* 클라이언트에 response body 보내기 */
-  srcfd = Open(filename, O_RDONLY, 0); 
+  srcfd = Open(filename, O_RDONLY, 0);
   srcp = (char *)malloc(filesize);
   Rio_readn(srcfd, srcp, filesize);
   Close(srcfd);
@@ -231,7 +200,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
 {
   char buf[MAXLINE], *emptylist[] = {NULL};
 
-  /* 연결 성공을 알리는 response line을 보내기 */
+  /* send SUCCESS response line */
   sprintf(buf, "HTTP/1.0 200 OK\r\n");
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
@@ -239,7 +208,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
 
   if (Fork() == 0)
   { /* Child process를 fork 하기 */
-    /* 실제 서버는 모든 CGI 환경 변수를 여기서 설정, Tiny에서는 생략함 */
+    /* 실제 서버는 모든 CGI 환경 변수를 여기서 설정, Tiny에서는 생략 */
     setenv("QUERY_STRING", cgiargs, 1);   /* URI의 CGI argument를 이용해 QUERY_STRING 환경변수 초기화 */
     Dup2(fd, STDOUT_FILENO);              /* child의 stdout을 file descriptor로 redirect */
     Execve(filename, emptylist, environ); /* CGI program을 실행 */
@@ -249,10 +218,8 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
 
 /* clienterror : 에러 메시지를 클라이언트에게 전송 */
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg)
-{
+{/* Build the HTTP response body */
   char buf[MAXLINE], body[MAXBUF];
-
-  /* Build the HTTP response body */
   sprintf(body, "<html><title>Tiny Error</title>");
   sprintf(body, "%s<body bgcolor="
                 "ffffff"
