@@ -151,15 +151,13 @@ void read_requesthdrs(rio_t *rp)
 int parse_uri(char *uri, char *filename, char *cgiargs)
 {
   char *ptr;
-  /* 실행파일의 홈 디렉토리 : cgi-bin */
-  /* cgi-bin을 포함하는 uri는 dynamic contents 요청임을 가정 */
   if (!strstr(uri, "cgi-bin"))
-  {                      /* Static content */
+  {/* Static content */
     strcpy(cgiargs, ""); /* cgi argument를 지우고 */
     strcpy(filename, ".");
-    strcat(filename, uri);           /* uri를 상대 리눅스 경로이름으로 변환 (e.g. ./index.html) */
-    if (uri[strlen(uri) - 1] == '/') // uri가 '/'로 끝난다면
-      strcat(filename, "home.html"); // 기본 파일이름 추가
+    strcat(filename, uri); 
+    if (uri[strlen(uri) - 1] == '/') 
+      strcat(filename, "home.html");
     return 1;
   }
   else
@@ -182,10 +180,9 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
 }
 
 /* serve_static : 서버의 local file을 body로 가진 HTTP response를 클라이언트에게 전달 */
-/* Tiny는 5개의 정적 컨텐츠 파일을 지원함 : HTML, unformatted text file, GIF, PNG, JPEG */
+/* Tiny는 5개의 정적 컨텐츠 파일을 지원: HTML, unformatted text file, GIF, PNG, JPEG, MP4 */
 void serve_static(int fd, char *filename, int filesize)
 {
-  printf("Debug: 나 예린, Serve static 들어옴");
   int srcfd;
   // char *srcp, filetype[MAXLINE], buf[MAXBUF];
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
@@ -204,12 +201,7 @@ void serve_static(int fd, char *filename, int filesize)
   printf("%s", buf);
 
   /* 클라이언트에 response body 보내기 */
-  srcfd = Open(filename, O_RDONLY, 0); /* read를 위해 filename을 open하고 file descriptor를 얻어옴 */
-  // srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0); /* 요청한 파일을 가상메모리 영억으로 mapping */
-  // Close(srcfd);                                              /* mapping 후 파일을 닫는다 - 메모리 누수를 막기 위해 */
-  // Rio_writen(fd, srcp, filesize);                             /* 파일을 클라이언트에 전달 */
-  // Munmap(srcp, filesize);                                     /* mapping된 가상메모리를 free 한다 - 메모리 누수를 막기 위해 */
-
+  srcfd = Open(filename, O_RDONLY, 0); 
   srcp = (char *)malloc(filesize);
   Rio_readn(srcfd, srcp, filesize);
   Close(srcfd);
@@ -217,9 +209,7 @@ void serve_static(int fd, char *filename, int filesize)
   free(srcp);
 }
 
-/*
- * get_filetype - Derive file type from filename
- */
+/* get_filetype - Derive file type from filename */
 void get_filetype(char *filename, char *filetype)
 {
   if (strstr(filename, ".html"))
@@ -249,10 +239,10 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
 
   if (Fork() == 0)
   { /* Child process를 fork 하기 */
-    /* 실제 서버는 모든 CGI 환경 변수를 여기서 설정하나, Tiny에서는 생략함 */
+    /* 실제 서버는 모든 CGI 환경 변수를 여기서 설정, Tiny에서는 생략함 */
     setenv("QUERY_STRING", cgiargs, 1);   /* URI의 CGI argument를 이용해 QUERY_STRING 환경변수 초기화 */
     Dup2(fd, STDOUT_FILENO);              /* child의 stdout을 file descriptor로 redirect */
-    Execve(filename, emptylist, environ); /* CGI program을 실행시킴 */
+    Execve(filename, emptylist, environ); /* CGI program을 실행 */
   }
   Wait(NULL); /* Parent process는 child process의 종료를 기다림 */
 }
